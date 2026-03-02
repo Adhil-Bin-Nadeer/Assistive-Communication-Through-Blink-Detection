@@ -91,6 +91,14 @@ export function selectHighlightedElement() {
     else if (el.dataset.device) {
         window.location.assign(`/devicecontrol.html?device=${el.dataset.device}`);
     }
+
+    // 5. If we're on the device control page and a control button was selected,
+    // simulate a click so the existing button handlers run (ON/OFF etc.).
+    else if (document.body.classList.contains('device-control-page') && el.classList.contains('control-button')) {
+        // Trigger click to reuse existing listeners in main.js/devicecontrol.html
+        el.click();
+        return;
+    }
     
     // Auto-advance highlight after selection (unless we just navigated away)
     if (state.currentMode !== 'morse_input' && el.tagName !== 'A' && el.id !== 'backButton' && el.id !== 'backBtn') {

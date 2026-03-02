@@ -3,6 +3,7 @@
  * Handles DOM updates, User Interface logic, and User Management.
  */
 import { state, elements } from './config.js';
+import { initWebcam } from './webcam.js';
 
 // --- Timer Logic ---
 export function updateTimerDisplay() {
@@ -116,6 +117,36 @@ export function setupUserListeners() {
             state.currentSelectedUser = e.target.value;
             if (state.currentSelectedUser) {
                 sessionStorage.setItem('currentSelectedUser', state.currentSelectedUser);
+                
+                // Auto-start camera when user is selected
+                console.log(`User selected: ${state.currentSelectedUser}, starting camera...`);
+                state.socket.emit('select_user', { username: state.currentSelectedUser }, (response) => {
+                    if (response.status === 'success') {
+                        // Start webcam
+                        initWebcam();
+                        // Start backend stream
+                        state.currentMode = 'navigation';
+                        state.socket.emit('start_stream');
+                        state.socket.emit('set_mode', { mode: 'navigation' });
+                        
+                        if (!state.communicationStartTime) {
+                            state.communicationStartTime = Date.now();
+                        }
+                        if (!state.timerInterval) {
+                            state.timerInterval = setInterval(updateTimerDisplay, 1000);
+                        }
+                        state.isStreaming = true;
+                        sessionStorage.setItem('isStreaming', 'true');
+                        
+                        // Update UI buttons if they exist
+                        const startBtn = document.getElementById('startButton');
+                        const stopBtn = document.getElementById('stopButton');
+                        const clearBtn = document.getElementById('clearButton');
+                        if (startBtn) startBtn.disabled = true;
+                        if (stopBtn) stopBtn.disabled = false;
+                        if (clearBtn) clearBtn.disabled = false;
+                    }
+                });
             } else {
                 sessionStorage.removeItem('currentSelectedUser');
             }

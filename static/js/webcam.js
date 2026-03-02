@@ -23,8 +23,8 @@ export function initWebcam(onFrameReady) {
             });
         }).catch(err => {
             console.error("Webcam error:", err);
-            alert("Could not access webcam.");
             stopWebcam();
+            if(onFrameReady) onFrameReady(err);
         });
     }
 }

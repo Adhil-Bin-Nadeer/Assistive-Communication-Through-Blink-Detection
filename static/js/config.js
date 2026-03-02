@@ -8,7 +8,8 @@ export const state = {
     currentMode: 'idle', // 'idle', 'navigation', 'morse_input'
     communicationStartTime: null,
     timerInterval: null,
-    frameSendingInterval: null
+    frameSendingInterval: null,
+    isStreaming: sessionStorage.getItem('isStreaming') === 'true'
 };
 
 // DOM Elements cache (populated in main.js)

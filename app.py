@@ -1,3 +1,17 @@
+
+
+# ...existing code...
+
+
+# ...existing code...
+
+# Place this route after all app/communicator setup and with other routes:
+
+# ...existing code...
+# 
+# 
+from flask import Flask, jsonify, request
+## Removed incorrect Communicator import and initialization
 import os
 import sys
 import threading
@@ -12,6 +26,7 @@ import cv2
 # Import our new modular backend components
 from backend_modules.user_manager import UserManager
 from backend_modules.communicator import MorseCodeCommunicator
+from backend_modules.config import ESP32_CONFIG
 
 # --- Configuration ---
 app = Flask(__name__, template_folder='.', static_folder='.', static_url_path='/')
@@ -22,7 +37,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', max_h
 
 # Global Instances
 user_manager = UserManager()
-communicator = MorseCodeCommunicator()
+communicator = MorseCodeCommunicator(esp32_ip=ESP32_CONFIG.get('ip', '192.168.1.100'))
 communicator.user_manager = user_manager
 
 # Global processing state
@@ -75,6 +90,78 @@ def create_user_api(username):
     if user_manager.add_user(username):
         return jsonify({"status": "success", "message": f"User '{username}' created."})
     return jsonify({"status": "error", "message": "User exists."}), 409
+
+# --- ESP32 Control API ---
+
+@app.route('/esp32/test')
+def test_esp32():
+    """Test connection to ESP32."""
+    result = communicator.test_esp32_connection()
+    return jsonify(result)
+
+@app.route('/esp32/config', methods=['GET'])
+def get_esp32_config():
+    """Get current ESP32 configuration."""
+    return jsonify({
+        "ip": ESP32_CONFIG.get('ip'),
+        "port": ESP32_CONFIG.get('port'),
+        "devices": ESP32_CONFIG.get('devices')
+    })
+
+@app.route('/esp32/config', methods=['POST'])
+def update_esp32_config():
+    """Update ESP32 IP address."""
+    data = request.json
+    new_ip = data.get('ip')
+    new_port = data.get('port')
+    
+    if not new_ip:
+        return jsonify({"status": "error", "message": "IP address required"}), 400
+    
+    result = communicator.update_esp32_ip(new_ip, new_port)
+    
+    # Update config file
+    ESP32_CONFIG['ip'] = new_ip
+    if new_port:
+        ESP32_CONFIG['port'] = new_port
+    
+    return jsonify(result)
+
+@app.route('/esp32/devices')
+def get_all_devices():
+    """Get status of all devices."""
+    result = communicator.get_all_devices()
+    return jsonify(result)
+
+
+@app.route('/esp32/device/<device>/<action>', methods=['POST'])
+def control_esp32_device(device, action):
+    """Control a specific ESP32 device (on/off/toggle) via POST from frontend.
+
+    Adds logging to help debug why frontend-triggered controls may fail.
+    """
+    try:
+        client = request.remote_addr
+        print(f"[DeviceControl] Received request from {client}: device={device}, action={action}")
+        # Call communicator to perform hardware action
+        result = communicator.send_room_control(device, action)
+        print(f"[DeviceControl] Communicator result: {result}")
+        return jsonify(result)
+    except Exception as e:
+        print(f"[DeviceControl] Error handling request: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/esp32/device/<device_name>')
+def get_device_state(device_name):
+    """Get state of a specific device."""
+    result = communicator.get_device_state(device_name)
+    return jsonify(result)
+
+@app.route('/esp32/alloff')
+def turn_all_off():
+    """Turn off all devices."""
+    result = communicator.turn_all_off()
+    return jsonify(result)
 
 # --- Socket Events ---
 
@@ -179,8 +266,8 @@ def process_frames(sid):
         
         # 2. Logic Flow
         if blink_info:
-            # Predict Dot vs Dash using the classifier
-            blink_type = communicator.classifier.predict(blink_info) # 'dot' or 'dash'
+            # Get blink type from blink_info (determined by duration)
+            blink_type = blink_info.get('type', 'dot')  # 'dot' or 'dash'
             
             print(f"Detected: {blink_type} ({blink_info['duration']:.2f}s)")
 
@@ -188,7 +275,7 @@ def process_frames(sid):
             socketio.emit('blink_detected', {'type': blink_type}, room=sid)
             
             # Process Morse Logic
-            # Pass the already determined blink_type to avoid re-calculation or errors
+            # Pass the already determined blink_type
             status, result = communicator.process_blink(blink_info, blink_type)
             
             if status == "blink_added":
@@ -213,4 +300,11 @@ def update_ui(sid):
 
 if __name__ == '__main__':
     print("Starting Blink Communicator Server...")
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    # For HTTPS (required for webcam on non-localhost), run with:
+    # python app.py --ssl
+    import sys
+    if '--ssl' in sys.argv:
+        # Generate self-signed cert: openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+        socketio.run(app, host='0.0.0.0', port=5000, debug=True, ssl_context=('cert.pem', 'key.pem'))
+    else:
+        socketio.run(app, host='0.0.0.0', port=5000, debug=True)

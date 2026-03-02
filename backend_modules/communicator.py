@@ -4,13 +4,15 @@ from collections import deque
 from .morse_decoder import MorseCodeDecoder
 from .blink_detector import BlinkDetector
 from .classifier import BlinkClassifier
+from .esp32_controller import ESP32Controller
 
 class MorseCodeCommunicator:
-    def __init__(self):
+    def __init__(self, esp32_ip="192.168.1.100"):
         self.blink_detector = BlinkDetector()
         self.morse_decoder = MorseCodeDecoder()
         self.classifier = BlinkClassifier()
         self.current_user = None
+        self.esp32 = ESP32Controller(esp32_ip=esp32_ip)
         
         # State variables
         self.current_morse_sequence = ""
@@ -45,18 +47,14 @@ class MorseCodeCommunicator:
         Processes a detected blink.
         
         Args:
-            blink_data (dict): Contains 'duration', 'timestamp', etc.
-            blink_type (str, optional): 'dot' or 'dash'. If None, it will be predicted.
+            blink_data (dict): Contains 'duration', 'timestamp', 'type', etc.
+            blink_type (str, optional): 'dot' or 'dash'. If None, will use the type from blink_data.
         """
         self.last_blink_time = time.time()
         
-        # Determine type if not provided (fallback logic)
+        # Get type from blink_data if not explicitly provided
         if blink_type is None:
-            if self.classifier and 'intensity' in blink_data:
-                 blink_type = self.classifier.predict(blink_data)
-            else:
-                 # Simple duration threshold fallback
-                 blink_type = 'dash' if blink_data.get('duration', 0) > 0.4 else 'dot'
+            blink_type = blink_data.get('type', 'dot')  # Default to 'dot' if not specified
 
         if blink_type == 'dot':
             self.current_morse_sequence += "."
@@ -98,9 +96,36 @@ class MorseCodeCommunicator:
 
     def send_room_control(self, device, action):
         """
-        Executes hardware commands.
+        Executes hardware commands via ESP32.
+        
+        Args:
+            device: Device name (e.g., 'light1', 'light2', 'fan', 'ac')
+            action: Action to perform ('on', 'off', 'toggle')
+            
+        Returns:
+            Dict with status and message
         """
-        # Placeholder for actual hardware integration (e.g., MQTT, GPIO, Smart Home API)
-        msg = f"Device '{device}' turned {action.upper()}"
-        print(f"[Hardware Control] {msg}")
-        return {"status": "success", "message": msg}
+        result = self.esp32.control_device(device, action)
+        return result
+    
+    def update_esp32_ip(self, new_ip, port=None):
+        """Update ESP32 IP address."""
+        self.esp32.update_ip(new_ip, port)
+        return {"status": "success", "message": f"ESP32 IP updated to {new_ip}"}
+    
+    def test_esp32_connection(self):
+        """Test connection to ESP32."""
+        connected, msg = self.esp32.test_connection()
+        return {"status": "success" if connected else "error", "message": msg}
+    
+    def get_device_state(self, device):
+        """Get current state of a device."""
+        return self.esp32.get_device_state(device)
+    
+    def get_all_devices(self):
+        """Get status of all devices."""
+        return self.esp32.get_all_devices()
+    
+    def turn_all_off(self):
+        """Turn off all devices."""
+        return self.esp32.turn_all_off()
