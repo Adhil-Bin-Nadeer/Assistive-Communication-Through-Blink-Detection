@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Silent Voice - Morse Input</title>
+    <link rel="stylesheet" href="static/style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+</head>
+<body class="message-page">
+    <div class="morse-app-container">
+        <!-- COUNTDOWN OVERLAY - gives patient 3 seconds to adjust -->
+        <div class="morse-countdown-overlay" id="countdownOverlay">
+            <div class="countdown-content">
+                <div class="countdown-number" id="countdownNumber">3</div>
+                <div class="countdown-text">Get ready...</div>
+            </div>
+        </div>
+        <!-- HEADER -->
+        <header class="morse-header">
+            <div class="profile-section">
+                <div class="profile-avatar"></div>
+                <span id="currentUsernameDisplay" class="profile-name">User</span>
+            </div>
+            <div class="morse-status-group">
+                <div id="statusText" class="morse-status-indicator">Ready</div>
+                <div id="connectionDot" class="connection-dot connected"></div>
+            </div>
+            <div class="webcam-mini-container">
+                <video id="webcam" autoplay muted playsinline></video>
+                <canvas id="canvas" style="display:none;"></canvas>
+            </div>
+        </header>
+
+        <!-- Main body content area - fits between header and footer -->
+        <div class="morse-body-content">
+            <!-- MESSAGE DISPLAY (primary focus area) -->
+            <section class="morse-message-display" id="messageDisplaySection">
+                <div class="message-label">Message</div>
+                <div class="message-text" id="messageDisplay">
+                    <span id="messageContent"></span>
+                    <span class="blinking-cursor">|</span>
+                </div>
+            </section>
+
+            <!-- CURRENT MORSE INPUT -->
+            <section class="morse-current-input" id="morseInputSection">
+                <div class="morse-input-label">Current Input</div>
+                <div class="morse-input-row">
+                    <div class="morse-dots-display" id="morseSequenceDisplay"></div>
+                    <div class="morse-predicted" id="predictedCharDisplay">
+                        <span class="predicted-label">Predicted:</span>
+                        <span class="predicted-char" id="predictedChar">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TIMING PROGRESS BARS -->
+            <section class="morse-timing-bars" id="timingSection">
+                <div class="timing-bar-group">
+                    <span class="timing-label">Letter</span>
+                    <div class="timing-bar-track">
+                        <div class="timing-bar-fill letter-bar" id="letterProgressBar"></div>
+                    </div>
+                    <span class="timing-value" id="letterTimerValue">0.0s</span>
+                </div>
+                <div class="timing-bar-group">
+                    <span class="timing-label">Word</span>
+                    <div class="timing-bar-track">
+                        <div class="timing-bar-fill word-bar" id="spaceProgressBar"></div>
+                    </div>
+                    <span class="timing-value" id="spaceTimerValue">0.0s</span>
+                </div>
+            </section>
+
+            <!-- BLINK FEEDBACK (flashes on blink detection) -->
+            <section class="morse-blink-feedback" id="blinkFeedbackSection">
+                <div class="blink-feedback-content" id="blinkFeedback">
+                    <span class="blink-feedback-text">Waiting for blink...</span>
+                </div>
+            </section>
+
+            <!-- POST-DECODE PAUSE INDICATOR -->
+            <section class="morse-post-decode" id="postDecodeSection" style="display:none;">
+                <div class="post-decode-content">
+                    <span class="decoded-char-display" id="decodedCharDisplay">A</span>
+                    <span class="post-decode-label">Letter decoded - reading pause</span>
+                </div>
+            </section>
+
+            <!-- MORSE REFERENCE CHART -->
+            <section class="morse-reference-chart" id="morseChart">
+                <div class="chart-title">Morse Code Reference</div>
+                <div class="chart-layout">
+                    <!-- ALPHABETS: left to mid-right -->
+                    <div class="chart-section chart-letters-section">
+                        <div class="chart-section-label">Alphabets</div>
+                        <div class="chart-grid chart-grid-letters">
+                            <div class="chart-cell" data-code=".-"><span class="chart-letter">A</span><span class="chart-code">&#183;&mdash;</span></div>
+                            <div class="chart-cell" data-code="-..."><span class="chart-letter">B</span><span class="chart-code">&mdash;&#183;&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code="-.-."><span class="chart-letter">C</span><span class="chart-code">&mdash;&#183;&mdash;&#183;</span></div>
+                            <div class="chart-cell" data-code="-.."><span class="chart-letter">D</span><span class="chart-code">&mdash;&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code="."><span class="chart-letter">E</span><span class="chart-code">&#183;</span></div>
+                            <div class="chart-cell" data-code="..-."><span class="chart-letter">F</span><span class="chart-code">&#183;&#183;&mdash;&#183;</span></div>
+                            <div class="chart-cell" data-code="--."><span class="chart-letter">G</span><span class="chart-code">&mdash;&mdash;&#183;</span></div>
+                            <div class="chart-cell" data-code="...."><span class="chart-letter">H</span><span class="chart-code">&#183;&#183;&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code=".."><span class="chart-letter">I</span><span class="chart-code">&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code=".---"><span class="chart-letter">J</span><span class="chart-code">&#183;&mdash;&mdash;&mdash;</span></div>
+                            <div class="chart-cell" data-code="-.-"><span class="chart-letter">K</span><span class="chart-code">&mdash;&#183;&mdash;</span></div>
+                            <div class="chart-cell" data-code=".-.."><span class="chart-letter">L</span><span class="chart-code">&#183;&mdash;&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code="--"><span class="chart-letter">M</span><span class="chart-code">&mdash;&mdash;</span></div>
+                            <div class="chart-cell" data-code="-."><span class="chart-letter">N</span><span class="chart-code">&mdash;&#183;</span></div>
+                            <div class="chart-cell" data-code="---"><span class="chart-letter">O</span><span class="chart-code">&mdash;&mdash;&mdash;</span></div>
+                            <div class="chart-cell" data-code=".--."><span class="chart-letter">P</span><span class="chart-code">&#183;&mdash;&mdash;&#183;</span></div>
+                            <div class="chart-cell" data-code="--.-"><span class="chart-letter">Q</span><span class="chart-code">&mdash;&mdash;&#183;&mdash;</span></div>
+                            <div class="chart-cell" data-code=".-."><span class="chart-letter">R</span><span class="chart-code">&#183;&mdash;&#183;</span></div>
+                            <div class="chart-cell" data-code="..."><span class="chart-letter">S</span><span class="chart-code">&#183;&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code="-"><span class="chart-letter">T</span><span class="chart-code">&mdash;</span></div>
+                            <div class="chart-cell" data-code="..-"><span class="chart-letter">U</span><span class="chart-code">&#183;&#183;&mdash;</span></div>
+                            <div class="chart-cell" data-code="...-"><span class="chart-letter">V</span><span class="chart-code">&#183;&#183;&#183;&mdash;</span></div>
+                            <div class="chart-cell" data-code=".--"><span class="chart-letter">W</span><span class="chart-code">&#183;&mdash;&mdash;</span></div>
+                            <div class="chart-cell" data-code="-..-"><span class="chart-letter">X</span><span class="chart-code">&mdash;&#183;&#183;&mdash;</span></div>
+                            <div class="chart-cell" data-code="-.--"><span class="chart-letter">Y</span><span class="chart-code">&mdash;&#183;&mdash;&mdash;</span></div>
+                            <div class="chart-cell" data-code="--.."><span class="chart-letter">Z</span><span class="chart-code">&mdash;&mdash;&#183;&#183;</span></div>
+                        </div>
+                    </div>
+                    <!-- NUMBERS: right side -->
+                    <div class="chart-section chart-numbers-section">
+                        <div class="chart-section-label">Numbers</div>
+                        <div class="chart-grid chart-grid-numbers">
+                            <div class="chart-cell" data-code=".----"><span class="chart-letter">1</span><span class="chart-code">&#183;&mdash;&mdash;&mdash;&mdash;</span></div>
+                            <div class="chart-cell" data-code="..---"><span class="chart-letter">2</span><span class="chart-code">&#183;&#183;&mdash;&mdash;&mdash;</span></div>
+                            <div class="chart-cell" data-code="...--"><span class="chart-letter">3</span><span class="chart-code">&#183;&#183;&#183;&mdash;&mdash;</span></div>
+                            <div class="chart-cell" data-code="....-"><span class="chart-letter">4</span><span class="chart-code">&#183;&#183;&#183;&#183;&mdash;</span></div>
+                            <div class="chart-cell" data-code="....."><span class="chart-letter">5</span><span class="chart-code">&#183;&#183;&#183;&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code="-...."><span class="chart-letter">6</span><span class="chart-code">&mdash;&#183;&#183;&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code="--..."><span class="chart-letter">7</span><span class="chart-code">&mdash;&mdash;&#183;&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code="---.."><span class="chart-letter">8</span><span class="chart-code">&mdash;&mdash;&mdash;&#183;&#183;</span></div>
+                            <div class="chart-cell" data-code="----."><span class="chart-letter">9</span><span class="chart-code">&mdash;&mdash;&mdash;&mdash;&#183;</span></div>
+                            <div class="chart-cell chart-cell-zero" data-code="-----"><span class="chart-letter">0</span><span class="chart-code">&mdash;&mdash;&mdash;&mdash;&mdash;</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <footer class="morse-actions">
+            <button id="speakBtn" class="morse-action-btn speak-btn">SPEAK</button>
+            <button id="clearBtn" class="morse-action-btn clear-btn">CLEAR</button>
+            <button id="deleteLastBtn" class="morse-action-btn delete-btn">DELETE LAST</button>
+            <a href="/" id="backBtn" class="morse-action-btn back-btn">BACK</a>
+        </footer>
+
+        <select id="userSelect" style="display:none;"></select>
+    </div>
+
+    <script type="module" src="static/js/main.js"></script>
+</body>
+</html>

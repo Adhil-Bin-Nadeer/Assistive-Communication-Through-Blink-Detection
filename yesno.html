@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blink Morse Communicator - Yes / No</title>
+    <link rel="stylesheet" href="static/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+</head>
+
+<body class="yesno-page">
+    <div class="app-container">
+        <header class="app-header">
+            <div class="profile-section">
+                <div class="profile-avatar"></div>
+                <span id="currentUsernameDisplay" class="profile-name">User</span>
+            </div>
+            <div class="timer-section">
+                <div class="timer-unit">
+                    <span id="hoursDisplay" class="timer-value">00</span>
+                    <span class="timer-label">Hours</span>
+                </div>
+                <div class="timer-unit">
+                    <span id="minutesDisplay" class="timer-value">00</span>
+                    <span class="timer-label">Minutes</span>
+                </div>
+                <div class="timer-unit">
+                    <span id="secondsDisplay" class="timer-value">00</span>
+                    <span class="timer-label">Seconds</span>
+                </div>
+            </div>
+        </header>
+
+        <video id="webcam" autoplay muted playsinline style="width: 160px; height: 120px; position:absolute; opacity:0; pointer-events:none;"></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <main class="yesno-main">
+            <div class="yesno-grid">
+                <button class="yesno-button yes-button" id="yesBtn" data-tts="Yes">
+                    <span class="yesno-icon">&#x2705;</span>
+                    <span class="yesno-text">Yes</span>
+                </button>
+                <button class="yesno-button no-button" id="noBtn" data-tts="No">
+                    <span class="yesno-icon">&#x274C;</span>
+                    <span class="yesno-text">No</span>
+                </button>
+                <button class="yesno-button back-button" id="backBtn">
+                    <span class="yesno-icon">&#x2B05;</span>
+                    <span class="yesno-text">Back</span>
+                </button>
+            </div>
+        </main>
+
+        <footer class="app-footer yesno-footer">
+            <select id="userSelect" style="display:none;"></select>
+        </footer>
+    </div>
+
+    <script type="module" src="static/js/main.js"></script>
+</body>
+</html>

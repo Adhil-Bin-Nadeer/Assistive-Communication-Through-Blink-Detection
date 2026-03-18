@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang= "en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Control</title>
+    <link rel="stylesheet" href="static/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+</head>
+<body class="device-control-page">
+    <div class="app-container">
+        <header class="app-header">
+            <div class="profile-section">
+                <div class="profile-avatar"></div>
+                <span id="currentUsernameDisplay" class="profile-name">User</span>
+            </div>
+            <div class="timer-section">
+                <div class="timer-unit">
+                    <span id="hoursDisplay" class="timer-value">00</span>
+                    <span class="timer-label">Hours</span>
+                </div>
+                <div class="timer-unit">
+                    <span id="minutesDisplay" class="timer-value">00</span>
+                    <span class="timer-label">Minutes</span>
+                </div>
+                <div class="timer-unit">
+                    <span id="secondsDisplay" class="timer-value">00</span>
+                    <span class="timer-label">Seconds</span>
+                </div>
+            </div>
+        </header>
+        
+        <main class="app-main-content">
+            <section class="room-control-section">
+                <h2 id="deviceTitle">Device Control</h2>
+                <div class="device-buttons">
+                    <button class="device-button" id="onBtn" data-action="on">ON</button>
+                    <button class="device-button" id="offBtn" data-action="off">OFF</button>
+                </div>
+                <div class="device-buttons">
+                    <button class="device-button back-button" id="backBtn">Back</button>
+                </div>
+            </section>
+        </main>
+
+        <select id="userSelect" style="display:none;"></select>
+        <video id="webcam" autoplay muted playsinline style="display:none;"></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+    </div>
+
+    <script type="module" src="static/js/main.js"></script>
+</body>
+</html>
