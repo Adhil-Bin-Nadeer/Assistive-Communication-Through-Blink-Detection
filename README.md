@@ -53,6 +53,81 @@ A blink-based communication system designed for paralyzed patients. SilentVoice 
 
    The file `shape_predictor_68_face_landmarks.dat` should be in the project root. It is included in the repository.
 
+## Contribution Workflow
+
+To keep the `main` branch stable, every contributor should create a personal working branch from the latest `main` branch and do all development there. Do not make changes directly in `main`.
+
+1. **Update your local `main` branch first**
+   ```bash
+   git switch main
+   git pull origin main
+   ```
+   This makes sure your branch starts from the latest approved code.
+
+2. **Create your own branch from `main` and switch to it**
+   ```bash
+   git switch -c your-name/short-description
+   ```
+   Example branch names: `adhi/blink-ui-update`, `john/morse-decoder-fix`
+
+3. **If your branch already exists, switch to it using the terminal**
+   ```bash
+   git switch your-name/short-description
+   ```
+   Do all your changes only in your own branch.
+
+4. **Do your work and verify it locally**
+   Make the required changes, test them properly, and confirm that the existing functionality still works correctly.
+
+5. **Commit your changes in your branch**
+   ```bash
+   git status
+   git add .
+   git commit -m "Describe your change clearly"
+   ```
+
+6. **Push your branch to GitHub**
+   ```bash
+   git push -u origin your-name/short-description
+   ```
+   After the first push, you can push later updates with:
+   ```bash
+   git push
+   ```
+
+7. **Pull the latest changes from `main` before creating or updating a pull request**
+   ```bash
+   git switch main
+   git pull origin main
+   git switch your-name/short-description
+   git merge main
+   ```
+   If the merge is successful, test the project again and push the updated branch:
+   ```bash
+   git push
+   ```
+
+8. **If a merge conflict happens, resolve it carefully**
+   Git will mark the conflicted files. Open each conflicted file, keep the correct code, and remove the conflict markers:
+   ```text
+   <<<<<<< HEAD
+   =======
+   >>>>>>> main
+   ```
+   After resolving the conflict, run:
+   ```bash
+   git add <resolved-file-name>
+   git commit
+   git push
+   ```
+   Test the project again after resolving conflicts to make sure everything still works properly.
+
+9. **Open a pull request**
+   Create a pull request from your branch into `main` so the changes can be reviewed properly.
+
+10. **Merge only after proper verification**
+    The branch should be merged into `main` only after the changes have been reviewed, verified, and confirmed to be working without breaking the existing functionality.
+
 ## Usage
 
 1. **Start the server**
