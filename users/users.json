@@ -1,0 +1,12 @@
+{
+  "MG": {
+    "created_date": "2025-12-11T23:42:14.605134",
+    "model_path": "users\\MG_model",
+    "trained": true
+  },
+  "Adhil": {
+    "created_date": "2026-03-12T17:48:26.275221",
+    "model_path": "users\\Adhil_model",
+    "trained": false
+  }
+}
