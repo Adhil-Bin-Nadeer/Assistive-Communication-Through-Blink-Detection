@@ -57,29 +57,30 @@ A blink-based communication system designed for paralyzed patients. SilentVoice 
 
 To keep the `main` branch stable, every contributor should create a personal working branch from the latest `main` branch and do all development there. Do not make changes directly in `main`.
 
-1. **Update your local `main` branch first**
+1. **Update your local `main` branch before starting**
    ```bash
    git switch main
    git pull origin main
    ```
-   This makes sure your branch starts from the latest approved code.
+   This makes sure your work starts from the latest approved code in the repository.
 
 2. **Create your own branch from `main` and switch to it**
    ```bash
    git switch -c your-name/short-description
    ```
-   Example branch names: `adhi/blink-ui-update`, `john/morse-decoder-fix`
+   Example branch names: `adhil/blink-ui-update`, `john/morse-decoder-fix`
 
-3. **If your branch already exists, switch to it using the terminal**
+3. **If your branch already exists, switch to your branch in the terminal**
    ```bash
    git switch your-name/short-description
+   git pull origin your-name/short-description
    ```
    Do all your changes only in your own branch.
 
-4. **Do your work and verify it locally**
-   Make the required changes, test them properly, and confirm that the existing functionality still works correctly.
+4. **Do your work in your branch**
+   Make the required changes in your branch and keep the existing functionality working correctly.
 
-5. **Commit your changes in your branch**
+5. **Check your changes and commit them**
    ```bash
    git status
    git add .
@@ -90,25 +91,25 @@ To keep the `main` branch stable, every contributor should create a personal wor
    ```bash
    git push -u origin your-name/short-description
    ```
-   After the first push, you can push later updates with:
+   After the first push, future updates can be pushed with:
    ```bash
    git push
    ```
 
-7. **Pull the latest changes from `main` before creating or updating a pull request**
+7. **Pull the latest `main` branch changes into your branch before review**
    ```bash
    git switch main
    git pull origin main
    git switch your-name/short-description
    git merge main
    ```
-   If the merge is successful, test the project again and push the updated branch:
+   If the merge is successful, push the updated branch:
    ```bash
    git push
    ```
 
 8. **If a merge conflict happens, resolve it carefully**
-   Git will mark the conflicted files. Open each conflicted file, keep the correct code, and remove the conflict markers:
+   Git will mark the conflicted files. Open each conflicted file, review both changes carefully, keep the correct code, and remove the conflict markers:
    ```text
    <<<<<<< HEAD
    =======
@@ -116,17 +117,42 @@ To keep the `main` branch stable, every contributor should create a personal wor
    ```
    After resolving the conflict, run:
    ```bash
-   git add <resolved-file-name>
-   git commit
+   git status
+   git add <resolved-files>
+   git commit -m "Resolve merge conflict"
    git push
    ```
-   Test the project again after resolving conflicts to make sure everything still works properly.
+   Always test the project again after resolving conflicts.
 
-9. **Open a pull request**
-   Create a pull request from your branch into `main` so the changes can be reviewed properly.
+9. **Verify your branch before creating a pull request**
+   Before requesting a merge to `main`, verify that:
+   - The application starts correctly with `python app.py`
+   - The app opens successfully at `http://localhost:5000`
+   - User creation and blink training still work if your change affects them
+   - The feature you changed works as expected
+   - Existing pages related to your change still work without errors
+   - No important existing functionality is broken by your changes
 
-10. **Merge only after proper verification**
-    The branch should be merged into `main` only after the changes have been reviewed, verified, and confirmed to be working without breaking the existing functionality.
+10. **Open a pull request**
+    Push your latest changes and create a pull request from `your-name/short-description` into `main`.
+    In the pull request, clearly mention:
+    - What you changed
+    - Why you changed it
+    - What verification you completed
+    - Any known limitations or follow-up work
+
+11. **Merge into `main` only after review and verification**
+    The branch should be merged into `main` only after the pull request has been reviewed, the changes have been verified, and the work has been confirmed not to break existing functionality.
+
+12. **If your team merges through the terminal, use an approved branch after review**
+    Only an authorized maintainer should merge to `main` through the terminal after the pull request is approved.
+    ```bash
+    git switch main
+    git pull origin main
+    git merge your-name/short-description
+    git push origin main
+    ```
+    After the merge, pull the latest `main` branch again in any local copies so everyone has the updated code.
 
 ## Usage
 
