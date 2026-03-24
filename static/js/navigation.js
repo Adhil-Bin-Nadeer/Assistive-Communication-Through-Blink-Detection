@@ -79,7 +79,11 @@ export function selectHighlightedElement() {
     // 1. Check for Back Button FIRST to ensure navigation happens
     if (el.id === 'backBtn' || el.id === 'backButton') {
         playSelectSound();
-        window.location.assign('/');
+        if (window.history.length > 1) {
+        window.history.back();   // go to previous page in this tab
+        } else {
+        window.location.assign('/');   // fallback if no history
+    }
         return;
     }
 
