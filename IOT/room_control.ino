@@ -13,7 +13,7 @@ const char *password = "Adhil@999";
 
 // Static IP Configuration
 const bool USE_STATIC_IP = true;
-
+ 
 IPAddress staticIP(10, 11, 255, 50); // ESP32 IP
 IPAddress gateway(10, 11, 255, 210); // Router Gateway
 IPAddress subnet(255, 255, 255, 0);
