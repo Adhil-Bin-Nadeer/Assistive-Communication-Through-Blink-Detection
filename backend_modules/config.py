@@ -3,7 +3,7 @@
 
 ESP32_CONFIG = {
     # Default ESP32 IP address - CHANGE THIS TO YOUR ESP32'S IP
-        "ip": "10.235.68.50",
+        "ip": "10.11.255.50",
     
     # HTTP port (default: 80)
     "port": 80,
