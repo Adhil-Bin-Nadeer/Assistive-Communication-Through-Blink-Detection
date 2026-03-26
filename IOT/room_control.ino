@@ -8,14 +8,14 @@
 #include <ArduinoJson.h>
 
 // WiFi credentials
-const char *ssid = "Christina";
-const char *password = "apple123";
+const char *ssid = "Adhil";
+const char *password = "Adhil@999";
 
 // Static IP Configuration
 const bool USE_STATIC_IP = true;
 
-IPAddress staticIP(172, 20, 10, 50); // ESP32 IP
-IPAddress gateway(172, 20, 10, 1);   // Router Gateway
+IPAddress staticIP(10, 11, 255, 50); // ESP32 IP
+IPAddress gateway(10, 11, 255, 210); // Router Gateway
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns1(8, 8, 8, 8);
 IPAddress dns2(8, 8, 4, 4);
