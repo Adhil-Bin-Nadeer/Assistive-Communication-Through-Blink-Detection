@@ -14,8 +14,8 @@ const char *password = "Adhil@999";
 // Static IP Configuration
 const bool USE_STATIC_IP = true;
 
-IPAddress staticIP(10, 11, 255, 50);
-IPAddress gateway(10, 11, 255, 210);
+IPAddress staticIP(10, 58, 13, 50);
+IPAddress gateway(10, 58, 13, 98);    // ✅ your actual router IP
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns1(8, 8, 8, 8);
 IPAddress dns2(8, 8, 4, 4);

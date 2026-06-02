@@ -14,6 +14,9 @@ from backend_modules.user_manager import UserManager
 from backend_modules.communicator import MorseCodeCommunicator
 from backend_modules.config import ESP32_CONFIG
 
+import subprocess
+subprocess.run(['sudo', 'arp', '-s', '10.58.13.50', '80:F3:DA:54:A4:74'])
+
 # --- Configuration ---
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIST = os.path.join(ROOT_DIR, 'frontend', 'dist')
